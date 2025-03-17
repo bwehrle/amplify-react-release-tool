@@ -19,17 +19,32 @@ const schema = a.schema({
         jiraAlias: a.string(),
       }),
 
+  ReleaseItem: a
+    .customType({
+      id: a.id().required(),
+      fixVersionUrl: a.string().required(),
+      qa: a.string().required(),
+      architect: a.string().required(),
+      featureBranch: a.string().required(),
+      approvals: a.string(),
+      em: a.string(),
+      fixVersionId: a.string(),
+      isReleaseReady: a.boolean().required(),
+      releaseTicket: a.string()
+    }),
+  
   Release: a
       .model({
           releaseId: a.id(),
-          releaseDate: a.date(),
-          releaseTitle: a.string(),
+          releaseDate: a.date().required(),
+          releaseTitle: a.string().required(),
           releaseBranch: a.string(),
           preStagingEnv: a.string(),
           currentState: a.string(),
           releaseManager: a.string(),
           qaPrime: a.string(),
-      })//.secondaryIndexes((index) => [index("releaseDate")])
+          releaseItems: a.ref("ReleaseItem").array(),
+      }).secondaryIndexes((index) => [index("releaseDate")])
       .authorization((allow) => [allow.publicApiKey()]),
 });
 
