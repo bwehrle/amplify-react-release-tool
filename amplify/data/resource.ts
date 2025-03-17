@@ -12,6 +12,25 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
+
+  User: a
+      .customType({
+        username: a.string(),
+        jiraAlias: a.string(),
+      }),
+
+  Release: a
+      .model({
+          releaseId: a.id(),
+          releaseDate: a.date(),
+          releaseTitle: a.string(),
+          releaseBranch: a.string(),
+          preStagingEnv: a.string(),
+          currentState: a.string(),
+          releaseManager: a.string(),
+          qaPrime: a.string(),
+      })//.secondaryIndexes((index) => [index("releaseDate")])
+      .authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
