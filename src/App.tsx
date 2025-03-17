@@ -35,24 +35,17 @@ function App() {
   
   async function handleSubmit(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): Promise<boolean> {
-    console.log("Creating release" + newRelease);
+  ) {
     const currentState = "NOT_READY";
-    try {
-      const result = await client.models.Release.create( {...newRelease, currentState} );  
-      if (result.errors) {
-        console.error(result.errors);
-        alert("Failed to create release");
-        return false;
-      }
-      setShowForm(false);
-      console.log("Release created");
-      return false;
-    } catch (error) {
-      console.error(error);
-      alert("Failed to create release");
-      return false;
+    event.preventDefault();
+
+    const result = await client.models.Release.create( {...newRelease, currentState} );  
+    if (result.errors) {
+      console.error(result.errors);
+      alert("Failed to create release: " + result.errors[0].message);
+      return;
     }
+    setShowForm(false);
   }
 
   return (
