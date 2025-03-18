@@ -21,8 +21,8 @@ function App() {
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [calStartDate, setCalStartDate] = useState(new Date());
-  const [calEndDate, setCalEndDate] = useState(new Date());
+  const [calStartDate, setCalStartDate] = useState(new Date(new Date().setDate(0)));
+  const [calEndDate, setCalEndDate] = useState(new Date(new Date().setDate(31)));
 
   const [newRelease, setNewRelease] = useState({
     releaseId: "",
