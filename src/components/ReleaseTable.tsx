@@ -4,27 +4,22 @@ import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
 
-interface ReleaseTableProps {
-    startDate: Date;
-    endDate: Date;
-}
-
-const ReleaseTable: React.FC<ReleaseTableProps> = ({ releaseProp }) => {
+function ReleaseTable({startDate, endDate} : {startDate: Date, endDate: Date}) {
     const client = generateClient<Schema>();
-    const [releases, setReleases] = useState<Schema["Release"]["type"]>();
+    const [releases, setReleases] = useState<Array<Schema["Release"]["type"]>>([]);
+
       useEffect(() => {
           client.models.Release.observeQuery(
             { 
               filter: { and
                 : [
-                  { releaseDate: { ge: releaseProp.startDate.toISOString(),  } },
-                  { releaseDate: { le: releaseProp.endDate.toISOString() } }
+                  { releaseDate: { ge: startDate.toISOString(), le: endDate.toISOString() } },
                 ]},
             },
           ).subscribe({
             next: (data) => setReleases([...data.items]),
           });
-        }, []);
+        }, [startDate, endDate]);
       
   return (
     <table style={{ width: "100%", borderCollapse: "collapse" }}>

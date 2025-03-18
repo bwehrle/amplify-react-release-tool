@@ -6,7 +6,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import AddReleasePopup from './components/AddReleasePopup';
-import ReleaseTable from './components/ReleaseTable';
+import ReleaseTable from './components/ReleaseTable.tsx';
 import { Event } from 'react-big-calendar';
 const client = generateClient<Schema>();
 const localizer = momentLocalizer(moment);
@@ -18,8 +18,11 @@ function App() {
   const [releases, setReleases] = useState<ReleaseView[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [showReleases, setShowReleaseList] = useState(false);
+
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [calStartDate, setCalStartDate] = useState(new Date());
+  const [calEndDate, setCalEndDate] = useState(new Date());
 
   const [newRelease, setNewRelease] = useState({
     releaseId: "",
@@ -39,15 +42,15 @@ function App() {
       { 
         filter: { and
           : [
-            { releaseDate: { ge: startDate.toISOString(),  } },
-            { releaseDate: { le: endDate.toISOString() } }
+            { releaseDate: { ge: calStartDate.toISOString(), le: calEndDate.toISOString()  } },
           ]},
         selectionSet: [...selectionSet],
       },
     ).subscribe({
       next: (data) => setReleases([...data.items]),
     });
-  }, []);
+  }, [calStartDate, calEndDate]);
+
 
   async function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -60,7 +63,8 @@ function App() {
     const currentState = "NOT_READY";
     event.preventDefault();
 
-    const result = await client.models.Release.create( {...newRelease, currentState} );  
+    // invoke the createRelease "query"
+    const result = await client.queries.CreateRelease( {...newRelease, currentState} );  
     if (result.errors) {
       console.error(result.errors);
       alert("Failed to create release: " + result.errors[0].message);
@@ -69,9 +73,15 @@ function App() {
     setShowForm(false);
   }
 
-  async function selectEvent(event: Event, e: React.SyntheticEvent<HTMLElement>) {
-    setEndDate(event.end as Date);
-    setStartDate(event.start as Date);
+  async function selectEvent(event: Event) {
+    const startDate = moment(event.start as Date);
+    const endDate = moment(event.end as Date);
+    const newStartDate = startDate.subtract(startDate.hours(), 'hours').toDate();
+    const newEndDate = endDate.add(24-endDate.hours(), 'hours').toDate();
+
+    setEndDate(newEndDate);
+    setStartDate(newStartDate);
+
     setShowReleaseList(true);
   }
 
@@ -82,10 +92,19 @@ function App() {
     end: new Date(release.releaseDate!),
   }));
 
+  function selectRange(range: Date[] | { start: Date; end: Date; }): void {
+    if (Array.isArray(range)) {
+      setCalStartDate(range[0]);
+      setCalEndDate(range[range.length - 1]);
+    } else {
+      setCalStartDate(range.start);
+      setCalEndDate(range.end);
+    }
+  }
+  
   return (
       <main>
         <h1>Releases</h1>
-        {showReleases && <ReleaseTable releases={releases} />}
         <button type="button" onClick={() => setShowForm(true)}>Add Release</button>
         {showForm && (
           <AddReleasePopup
@@ -95,12 +114,16 @@ function App() {
             closePopup={() => setShowForm(false)}
           />
         )}
+        {showReleases && 
+          <ReleaseTable startDate={startDate} endDate={endDate} />
+        }
         <Calendar
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
           onSelectEvent={(event) => selectEvent(event)}
+          onRangeChange={(range) => selectRange(range)}
           style={{ height: 500, margin: "50px" }}
         />
         <button onClick={signOut}>Sign out</button>

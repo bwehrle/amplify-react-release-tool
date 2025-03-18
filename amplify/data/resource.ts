@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { createRelease } from "../functions/create-release/resource";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -45,6 +46,21 @@ const schema = a.schema({
           qaPrime: a.string(),
           releaseItems: a.ref("ReleaseItem").array(),
       }).secondaryIndexes((index) => [index("releaseDate")])
+      .authorization((allow) => [allow.publicApiKey()]),
+
+   CreateRelease: a
+    .query()
+    .arguments({
+        releaseDate: a.date().required(),
+        releaseTitle: a.string().required(),
+        releaseBranch: a.string(),
+        preStagingEnv: a.string(),
+        currentState: a.string(),
+        releaseManager: a.string(),
+        qaPrime: a.string()
+      })
+      .returns(a.string())
+      .handler(a.handler.function(createRelease))
       .authorization((allow) => [allow.publicApiKey()]),
 });
 
