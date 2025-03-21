@@ -58,13 +58,11 @@ function App() {
   }
 
   async function handleSubmit(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) {
-    const currentState = "NOT_READY";
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+      
     event.preventDefault();
-
     // invoke the createRelease "query"
-    const result = await client.queries.CreateRelease( {...newRelease, currentState} );  
+    const result = await client.queries.CreateReleaseProxy( {...newRelease } );  
     if (result.errors) {
       console.error(result.errors);
       alert("Failed to create release: " + result.errors[0].message);

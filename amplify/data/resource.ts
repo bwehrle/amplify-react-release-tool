@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { createRelease } from "../functions/create-release/resource";
+import { createReleaseProxy } from "../functions/create-release-proxy/resource";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -62,6 +63,16 @@ const schema = a.schema({
       .returns(a.string())
       .handler(a.handler.function(createRelease))
       .authorization((allow) => [allow.publicApiKey()]),
+        
+    CreateReleaseProxy: a
+      .query()
+      .arguments({
+          releaseDate: a.date().required(),
+          releaseTitle: a.string().required(),
+        })
+        .returns(a.string())
+        .handler(a.handler.function(createReleaseProxy))
+        .authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
